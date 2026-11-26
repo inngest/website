@@ -42,6 +42,8 @@ const BLOG_DIR = path.join(process.cwd(), "content/blog");
 type Scope = {
   path: string;
   heading: string;
+  // Optional <title> override. The on-page H1 stays `heading`.
+  metaTitle?: string;
   subtitle?: string;
   showSubtitle?: boolean;
   author?: string | string[];
@@ -281,8 +283,15 @@ export async function generateMetadata({
   if (!post) return {};
   const scope = post.data;
   // `absolute` so the root "%s | Inngest" template doesn't append a
-  // second "Inngest" after "… - Inngest Blog".
-  const title = `${scope.heading} - Inngest Blog`;
+  // second "Inngest" after "… - Inngest Blog". `metaTitle` overrides the
+  // <title> when the SEO title should differ from the on-page H1.
+  const titleBase =
+    typeof scope.metaTitle === "string" && scope.metaTitle.trim()
+      ? scope.metaTitle.trim()
+      : scope.heading;
+  const title = titleBase.endsWith(" - Inngest Blog")
+    ? titleBase
+    : `${titleBase} - Inngest Blog`;
   const description = scope.subtitle ?? "";
   const url = `${process.env.NEXT_PUBLIC_HOST ?? ""}${scope.path}`;
   // `getFullURL` leaves an already-absolute URL (e.g. a cdn.inngest.com

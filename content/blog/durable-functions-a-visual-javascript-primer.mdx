@@ -1,71 +1,82 @@
 ---
 tags: ["Durable Execution", "Tutorials & Guides"]
-heading: "What are Durable Functions? A visual JavaScript primer"
+heading: "What Are Durable Functions? A Visual Primer in TypeScript and JavaScript"
+metaTitle: "What Are Durable Functions? A TypeScript Primer."
 image: /assets/blog/durable-functions-a-visual-javascript-primer/featured-image.png
 showSubtitle: false
-subtitle: "Lydia Hallie's powerful animated illustrations cover the inner workings of Durable Functions."
+subtitle: "Durable functions checkpoint each step so a crash resumes instead of restarting. Here's how they work in TypeScript, with Azure and AWS compared."
 date: 2024-09-18
-dateUpdated: 2026-01-07
+dateUpdated: 2026-11-26
 author: Lydia Hallie
 disableCTA: false
+faq:
+  - question: "What are durable functions?"
+    answer: "Durable functions are functions that checkpoint their progress as they run, so a failure or restart resumes from the last completed unit of work instead of starting over. Each unit, usually called a step, saves its result and retries independently. The pattern suits long-running tasks such as payment flows, data exports, onboarding sequences, and AI workflows, where repeating completed work is expensive or incorrect."
+  - question: "Are durable functions the same as Azure Durable Functions?"
+    answer: "No. Azure Durable Functions is Microsoft's specific product, an extension of Azure Functions with orchestrator, activity, and entity functions and a configurable storage provider. Durable functions as a general term describes the pattern of checkpointing and replay, which several platforms implement differently. AWS ships its own version for Lambda, and portable implementations run the same model on compute you already have without a vendor-specific programming model."
+  - question: "What is the difference between durable functions and AWS Step Functions?"
+    answer: "Step Functions coordinates work as a state machine defined outside your code, in JSON or ASL, with your Lambda functions as the tasks it invokes. Durable functions keep the orchestration inside the function itself, as ordinary control flow in your programming language. AWS positions Lambda durable functions as the alternative for teams who would rather write the workflow as code than maintain a separate state machine definition."
+  - question: "Why do durable functions have to be deterministic?"
+    answer: "Because the function body is replayed rather than resumed in place. On each pass the runtime executes your code from the top, substituting saved results for operations that already completed. Anything non-deterministic sitting outside a step, such as a random value or the current timestamp, produces a different result on every pass and makes the run inconsistent. Keeping that work inside a step saves the first result and reuses it."
+  - question: "Can you write durable functions in Node.js and TypeScript?"
+    answer: "Yes. All three implementations support it. Azure Durable Functions supports JavaScript and TypeScript alongside C#, Python, PowerShell, and Java. The AWS durable execution SDK covers JavaScript and TypeScript, Python, and Java. Inngest's SDK is TypeScript-first, with Python and Go also available, and the functions are ordinary async TypeScript served over an HTTP endpoint in your existing app."
+  - question: "How do durable functions handle retries and idempotency?"
+    answer: "Retries are automatic and scoped to the step that failed, so completed steps return their saved results instead of running again. Inngest allows four retries after the initial attempt by default, and each step keeps its own counter. Idempotency is still yours to handle inside a step, because a call can succeed and then time out before its result is recorded, leaving the retry to repeat a write."
 ---
 
-Modern web applications often require **long-running tasks** that need to be **resilient to external errors and interruptions**. If such long-running tasks aren't handled propertly, any error could lead to data inconsistencies, financial losses, poor user experiences, and overall system failures.
+Durable functions keep their progress through failures and restarts. Modern web applications often require **long-running tasks** that need to be **resilient to external errors and interruptions**, and in TypeScript and JavaScript, durable functions look almost like the async functions you already write. If such long-running tasks aren't handled properly, any error could lead to data inconsistencies, financial losses, poor user experiences, and overall system failures.
 
 These are features like API integrations, AI-powered workflows, data exports, automated billing systems, user onboarding sequences, or even recurring notifications.
 
-Durable Functions offer a simpler, more streamlined solution for managing long-running tasks that need to withstand interruptions and failures. They provide a powerful framework for building resilient, stateful applications, removing the need for manual error and retry management.
+Durable functions offer a simpler, more streamlined solution for managing long-running tasks that need to withstand interruptions and failures. The term describes a general programming model rather than one product. Microsoft sells [Azure Durable Functions](https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview), AWS ships [Lambda durable functions](https://docs.aws.amazon.com/lambda/latest/dg/durable-functions.html), and the same model runs as a portable pattern on compute you already have. This primer covers the portable version, written in TypeScript with Inngest's SDK.
 
-In this article, we'll explore what Durable Functions really are, the problems they solve, and how JavaScript developers can get started with Durable Functions through Inngest's Javascript SDK.
+By the end, you'll be able to look at a multi-step job in your own codebase, mark the points where state should be saved, and rewrite it so a failure at the fourth operation doesn't repeat the first three.
 
----
-
-## Traditional Approach
+## The problem: cron jobs and background jobs that forget where they were
 
 Imagine we have an e-commerce platform where orders go through several stages: payment processing, inventory checks, shipment scheduling, and notification updates.
 
-Traditionally, we might manage these stages using a mix of background and Cron  jobs. Background jobs are tasks that run in the background independently of user interactions, often used for operations like processing payments or updating inventory. Cron jobs are scheduled tasks that run at certain times or intervals, useful for tasks like nightly inventory checks or daily order shipment scheduling.
+Traditionally, we might manage these stages using a mix of background and Cron jobs. Background jobs are tasks that run in the background independently of user interactions, often used for operations like processing payments or updating inventory. Cron jobs are scheduled tasks that run at certain times or intervals, useful for tasks like nightly inventory checks or daily order shipment scheduling.
 
-![Cron jobs tend to be unrealiable in case of failure, requiring a manual intervention with risks of overlaps.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_77_(1).png)
+![A cron schedule where the 9:00 inventory check fails, leaving stock levels stale until the next run at 10:00.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_77_(1).png)
 
-While this method works, it's important to handle potential errors properly. In this case, the `checkInventory` Cron job failed at 9:00, which could lead to outdated stock levels if not handled properly.  This, in turn, can cause overselling, missed restocking, and general fulfillment delays.
+While this method works, errors have to be handled properly. In this case, the `checkInventory` Cron job failed at 9:00, which could lead to outdated stock levels if not handled properly. This, in turn, can cause overselling, missed restocking, and general fulfillment delays.
 
 Additionally, if the server goes down or there's an unexpected delay, our Cron job tasks fail to execute and won't retry automatically. Unless we explicitly give the instructions to retry the failed Cron job, our UI will remain broken until at least 10:00, when the next Cron job is scheduled.
 
+Moving to a proper queue doesn't close the gap either, because the queue can be durable while the worker consuming it is not.
 
 <Callout>
 
 💡 To summarize, our traditional approach had a few downsides:
 
-- **Lack of State Management**: Background jobs typically don't maintain their state between executions. If a job fails midway, it often needs to start from the beginning, potentially leading to duplicate work or inconsistent results.
-- **Inefficient Error Handling**: While we can implement basic retry mechanisms, it's challenging to manage complex error handling and recovery scenarios.
-- **Long-Running Processes**: Background jobs are usually designed for relatively short-lived tasks. Managing processes that may run for hours or days becomes increasingly complex.
+- **Lack of State Management**: Background jobs typically don't maintain their state between executions, so a job that fails midway often needs to start from the beginning.
+- **Inefficient Error Handling**: Basic retry mechanisms are possible, but complex error handling and recovery scenarios are difficult to manage.
+- **Long-Running Processes**: Background jobs are usually designed for relatively short-lived tasks, so processes that run for hours or days become increasingly complex.
 - **Scalability Concerns**: As the number of background jobs grows, it becomes increasingly challenging to manage their execution, monitor them, and handle errors.
 
 </Callout>
 
----
+## What are durable functions?
 
-## Durable Functions
+Now, let's reimagine the same e-commerce platform using durable functions. But first, what are durable functions?
 
-Now, let's reimagine the same e-commerce platform using Durable Functions. But first, what *are* Durable Functions?
+The term "durable" in durable functions refers to the workflow's ability to maintain state and logic through **failures**, **retries**, and **pauses**. A durable function checkpoints each completed step, retries the step that failed, and resumes from the last checkpoint after a crash.
 
-The term "durable" in Durable Functions refers to the workflow's ability to maintain state and logic through **failures**, **retries**, and **pauses**. A Durable Function **guarantees a start-to-finish execution**; once it's started, it will eventually complete its execution regardless of any unexpected issues.
+![A durable function checkpointing each completed step and retrying only the step that failed.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_85_(1).png)
 
-![Durable Functions are designed with reliability at their core with automatic retries.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_85_(1).png)
+This is what makes durable functions special because this wasn't the case with our traditional setup.
 
-This is what makes Durable Functions special because this wasn't the case with our traditional setup.
+In a durable function, each task in the order processing workflow is broken down into modular, independent **steps**. For example, the order processing workflow could include steps for validating payment, checking inventory, scheduling shipment, and updating the customer.
 
----
+Inngest's SDK allows you to create steps through the [`step.run`](/docs/durable-execution/primitives/step-run?ref=blog-what-are-durable-functions) function.
 
-In a Durable Function, each task in the order processing workflow is broken down into modular, independent **steps**. For example, the order processing workflow could include steps for validating payment, checking inventory, scheduling shipment, and updating the customer.
-
-Inngest's SDK allows you to create steps through the `step.run` function.
-
-```jsx
+```ts
 const orderProcessingWorkflow = inngest.createFunction(
-  { id: "Order Processing" },
-  { event: "order.placed" },
+  {
+    id: "Order Processing",
+    triggers: { event: "order.placed" },
+  },
   async ({ step, event }) => {
     const paymentConfirmation = await step.run("process-payment", () =>
       processPayment(event.data.orderDetails)
@@ -75,7 +86,7 @@ const orderProcessingWorkflow = inngest.createFunction(
       checkInventory(event.data.orderDetails.items)
     );
 
-     const shipmentDetails = await step.run("schedule-shipment", () =>
+    const shipmentDetails = await step.run("schedule-shipment", () =>
       scheduleShipment(event.data.orderDetails)
     );
 
@@ -92,18 +103,20 @@ const orderProcessingWorkflow = inngest.createFunction(
 
 Each step is capable of handling failures and can automatically retry based on predefined policies, ensuring that all parts of the order processing sequence are executed correctly.
 
-Durable Functions can also include **waits** that pause the process for necessary delays (e.g., waiting for a third-party shipment confirmation) without consuming resources. This can be more efficient than traditional CRON jobs, which are less time flexible and can over-consume resources by continuously polling for status updates.
+Durable functions can also include **waits** that pause the process for necessary delays (e.g., waiting for a third-party shipment confirmation) without consuming resources. This can be more efficient than traditional Cron jobs, which are less time flexible and can over-consume resources by continuously polling for status updates.
 
-Inngest's SDKS allows you to create waits through several methods, one of which is the [`step.waitForEvent`](/docs/reference/typescript/v4/functions/step-wait-for-event?ref=blog-what-are-durable-functions) function.
+Inngest's SDK allows you to create waits through several methods, one of which is the [`step.waitForEvent`](/docs/reference/typescript/v4/functions/step-wait-for-event?ref=blog-what-are-durable-functions) function.
 
 ![The Durable Functions "wait for event" feature enables pausing executions while waiting for another event, for example: waiting for shipment information to be dispatched.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_88.png)
 
 This function is used to pause the execution of a workflow step until a specific event is received, or if a timeout occurs.
 
-```jsx
+```ts
 const orderProcessingWorkflow = inngest.createFunction(
-  { id: "Order Processing" },
-  { event: "order.placed" },
+  {
+    id: "Order Processing",
+    triggers: { event: "order.placed" },
+  },
   async ({ step, event }) => {
     const paymentConfirmation = await step.run("process-payment", () =>
       processPayment(event.data.orderDetails)
@@ -128,7 +141,7 @@ const orderProcessingWorkflow = inngest.createFunction(
     });
 
     if (shipment) {
-      await step.run("send-notification", () =>
+      await step.run("send-shipped-notification", () =>
         sendNotification(event.data.customerId, "Order Shipped")
       );
     }
@@ -136,106 +149,184 @@ const orderProcessingWorkflow = inngest.createFunction(
 );
 ```
 
-In this workflow, after scheduling the shipment, the workflow enters a wait state up to 7 days using the `step.waitForEvent` function. The `step.waitForEvent` function enables our workflow to wait for a new `"shipment.created”` matching the same `orderId`. This wait pauses the workflow until the logistics provider confirms the shipment has been dispatched. Unlike regular background jobs, this wait doesn't use resources while it waits, making it better for handling time-sensitive tasks in web apps.
+In this workflow, after scheduling the shipment, the workflow enters a wait state up to 7 days using the `step.waitForEvent` function. The `step.waitForEvent` function enables our workflow to wait for a new `shipment/create` event matching the same `orderId`. This wait pauses the workflow until the logistics provider confirms the shipment has been dispatched. Unlike regular background jobs, this wait doesn't use resources while it waits, making it better for handling time-sensitive tasks in web apps.
 
 <Callout>
 
-💡 To summarize, our Durable Function approach enhances the efficiency and reliability of long-running tasks compared to the traditional approach:
+💡 To summarize, our durable function approach enhances the efficiency and reliability of long-running tasks compared to the traditional approach:
 
-- **Robust State Management**: Each step in a Durable Function is capable of maintaining its state between executions. This prevents the need to restart tasks from the beginning if they fail, minimizing the risk of duplication or inconsistent results.
-- **Advanced Error Handling**: Durable Functions are equipped with built-in mechanisms for [error detection and automatic retries](/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-what-are-durable-functions), which can be tuned to address specific recovery scenarios. This not only improves the reliability of task execution but also reduces the manual oversight that was required with the traditional approach.
-- **Efficient Long-Running Process Management**: Each task within a Durable Function is treated as a modular step that can independently handle long durations of activity. This modularity allows for more scalable and manageable processes, overcoming the limitations of traditional background jobs that are typically optimized for shorter tasks.
-- **Enhanced Scalability**: As the complexity and number of tasks grow within an application, Durable Functions provide a scalable framework that simplifies monitoring and managing these tasks. The independent steps ensure that the performance and stability of one does not affect others, which is a common challenge with traditional background jobs.
+- **State Management**: Each step in a durable function is capable of maintaining its state between executions. This prevents the need to restart tasks from the beginning if they fail, minimizing the risk of duplication or inconsistent results.
+- **Advanced Error Handling**: Durable functions are equipped with built-in mechanisms for [error detection and automatic retries](/docs/durable-execution/guides-and-advanced/error-handling?ref=blog-what-are-durable-functions), which can be tuned to address specific recovery scenarios. This not only improves the reliability of task execution but also reduces the manual oversight that was required with the traditional approach.
+- **Efficient Long-Running Process Management**: Each task within a durable function is treated as a modular step that can independently handle long durations of activity. This modularity allows for more scalable and manageable processes, overcoming the limitations of traditional background jobs that are typically optimized for shorter tasks.
+- **Scalability**: As the complexity and number of tasks grow within an application, durable functions provide a scalable framework that simplifies monitoring and managing these tasks. The independent steps ensure that the performance and stability of one does not affect others, which is a common challenge with traditional background jobs.
 
 </Callout>
 
----
+## Under the hood
 
-### Under the hood
-
-Durable Functions provide these features automatically, but how do they work behind the scenes? Let's explore what happens when we run our e-commerce code snippet step-by-step using Inngest's [Durable Execution Engine](/docs/durable-execution/durable-workflows?ref=blog-what-are-durable-functions) and SDK.
+Durable functions provide these features automatically, but how do they work behind the scenes? Let's explore what happens when we run our e-commerce code snippet step-by-step using Inngest's [durable execution engine](/docs/durable-execution/durable-workflows?ref=blog-what-are-durable-functions) and SDK.
 
 Before we start, we first need to understand that:
 
-- The Inngest Platform hosts the Durable Execution Engine. The engine is responsible for managing the queue of pending function runs, and maintaining the state of ongoing or pending Function steps.
-- The Durable Execution Engine interacts with the Inngest SDK through HTTP requests. Through this communication, the engine provides states and collects updated states from the SDK.
+- The Inngest Platform hosts the durable execution engine. The engine is responsible for managing the queue of pending function runs, and maintaining the state of ongoing or pending function steps.
+- The durable execution engine interacts with the Inngest SDK through HTTP requests. Through this communication, the engine provides states and collects updated states from the SDK.
 - The functions need to be [served through HTTP endpoints](/docs/learn/serving-inngest-functions?ref=blog-what-are-durable-functions). In this step-by-step example, let's assume that we've successfully done this.
-
 
 ⚠️ Note: The illustrations are simplified to improve readability.
 
----
-
 Here's a run of our `orderProcessingWorkflow()`:
 
-1. An `"order.placed"` event is sent to Inngest. In this case, this is done within our application's custom  `api/order` endpoint, which for example can be triggered when an order is placed. This sends an HTTP request to the Inngest Platform.
+1. An `order.placed` event is sent to Inngest. In this case, this is done within our application's custom `api/order` endpoint, which for example can be triggered when an order is placed. This sends an HTTP request to the Inngest Platform.
 2. Inngest's Platform receives this request, which in turn triggers the engine to identify the matching functions. Within the engine, it creates a new job for the execution of the matching function (`orderProcessingWorkflow` in this case), and queues this job.
 
 <AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest1.mov"} />
 
-3. The engine picks up this job when it's first in the queue, and sends a request to your app's  `/api/inngest` endpoint. This request includes all the information that the SDK needs to run `orderProcessingWorkflow` and the state indicating that step #1 hasn't run yet.
+3. The engine picks up this job when it's first in the queue, and sends a request to your app's `/api/inngest` endpoint. This request includes all the information that the SDK needs to run `orderProcessingWorkflow` and the state indicating that step #1 hasn't run yet.
 4. The SDK receives this request. It executes `orderProcessingWorkflow`, and runs step #1.
 
 <AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest2.1.mov"} />
 
 5. After running step #1, the SDK sends a request to the engine with the data from step #1, and a request to run step #2.
-6. The Engine receives the response with the incremental state update, stores it, and picks up the run again.
+6. The engine receives the response with the incremental state update, stores it, and picks up the run again.
 
 <AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest2.2.mov"} />
 
-
-7. The Engine sends a request to the SDK which indicates that step #2 should be run next.
+7. The engine sends a request to the SDK which indicates that step #2 should be run next.
 8. The SDK receives this request. It re-runs the entire workflow, but skips step #1 since this has already been memoized. It then discovers step #2, and executes this.
 
 <AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest2.3.mov"} />
 
-9. The SDK returns a response with step #2's state and return value, and information that lets the SDK know run step #3 next.
+9. The SDK returns a response with step #2's state and return value, and information that lets the engine know to run step #3 next.
 
 <AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest2.4.mov"} />
 
-This process continues, with the Engine and SDK communicating back and forth, executing steps, and managing state until the entire workflow is completed. When the workflow has been completed, the SDK responds with a `200 OK` response, and the job is removed from the jobs queue.
+This process continues, with the engine and SDK communicating back and forth, executing steps, and managing state until the entire workflow is completed. When the workflow has been completed, the SDK responds with a `200 OK` response, and the job is removed from the jobs queue.
 
----
+Throughout the workflow, any step that encounters an issue executes predefined error-handling routines. Let's see what happens behind the scenes if `check-inventory` were to throw an error:
 
-Throughout the workflow, any step that encounters an issue executes predefined error-handling routines. Let's see what happens behind the scenes if `"check-inventory"` were to throw an error:
-
-1. The SDK tries to execute `check-inventory` , but an exception is thrown (in real life, this could be caused by e.g. a server timeout). The SDK catches this, returns an `error` object in the response, and includes a default retry configuration if none is provided.
-2. The Engine receives the error response, stores the run state including error details, and schedules a retry based on the retry configuration (default is 4 retries).
+1. The SDK tries to execute `check-inventory`, but an exception is thrown (in real life, this could be caused by e.g. a server timeout). The SDK catches this, returns an error object in the response, and includes a default retry configuration if none is provided.
+2. The engine receives the error response, stores the run state including error details, and schedules a retry based on the retry configuration (the default is [four retries after the initial attempt](/docs/durable-execution/guides-and-advanced/error-handling/retries?ref=blog-what-are-durable-functions)).
 
 <AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest3.1.mov"} />
 
-3. After the first delay of 15 seconds, the Engine initiates the first retry by resending another request. The SDK skips  `process-payment` as this is already memoized, and attempts to run `check-inventory` again. In this case, the second attempt succeeds.
+3. After a backoff delay, the engine initiates the first retry by resending another request. The SDK skips `process-payment` as this is already memoized, and attempts to run `check-inventory` again. In this case, the second attempt succeeds.
 
 <AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest3.2.mov"} />
 
-If it were to fail again, the process repeats from step 3. This retry cycle continues until either the step succeeds or the maximum retries (4 by default) are exhausted. If all retries are exhausted, the Engine marks the step and workflow as failed, and stores the final error state for debugging and potential manual intervention.
+If it were to fail again, the process repeats from step 3. This retry cycle continues until either the step succeeds or the maximum retries are exhausted. Each `step.run` carries its own independent retry counter, so a step that exhausts its attempts doesn't consume the attempts belonging to the one before it. If all retries are exhausted, the engine marks the step and workflow as failed, and stores the final error state for debugging and potential manual intervention.
 
-This durable retry mechanism automatically handles transient errors, giving each step multiple chances to succeed without manual intervention. By preserving the workflow state, it can seamlessly continue once the error is resolved.
+This durable retry mechanism automatically handles transient errors, giving each step multiple chances to succeed without manual intervention. By preserving the workflow state, the run continues from where it stopped once the error is resolved.
 
----
+## What makes a durable function deterministic
 
-## Making HTTP requests durable with step.fetch()
+The SDK executes the function body more than once, and that single fact decides how you write these functions. Every time the engine asks for the next step, the SDK runs your whole function from the top, returning saved results for steps that already completed and actually running only the one it has been asked for. Your code is replayed rather than resumed in place, which is covered in more depth in [durable execution concepts](/docs/durable-execution/concepts?ref=blog-what-are-durable-functions) and [how Inngest functions are executed](/docs/learn/how-functions-are-executed?ref=blog-what-are-durable-functions).
 
-Beyond `step.run()` and `step.waitForEvent()`, Inngest now provides `step.fetch()` for making durable HTTP requests to third-party APIs:
-```javascript
+The consequence is a rule about where non-deterministic work goes. A random value, a timestamp, a database read, or an un-stepped API call placed in the function body executes on every pass and can return something different each time. Put it inside a step and the SDK saves the first result, then hands back that same value on every later pass.
+
+```ts
+// Don't do this: runs on every replay and returns a different value each time
+const unsafeOrderId = crypto.randomUUID();
+
+// Do this: saved on the first pass, identical on every replay afterwards
+const orderId = await step.run("create-order-id", () => crypto.randomUUID());
+```
+
+The same constraint governs what you can change while runs are still in flight. Each step's result is saved against its ID, and a resuming run retrieves that result by matching the ID. Changing a step ID can cause an in-progress run to execute that step again even though it already completed, so make sure the step is safe to repeat before renaming it, especially if it writes to an external system. For a rewrite that can't reuse in-flight state, [deploy a second function with a new ID](/docs/durable-execution/guides-and-advanced/versioning?ref=blog-what-are-durable-functions) and route events between the two versions on mutually exclusive trigger conditions.
+
+## Azure, AWS or neither: which durable functions do you mean?
+
+The term covers three different things, and this page has been describing one of them. All three checkpoint progress, replay on resume, and retry failed work, so the mechanics feel familiar across them. What differs is the API you write against, where your state lives, where your code runs, and what you're committed to once you've shipped.
+
+Your existing infrastructure usually decides which one fits. A team already running Azure Functions gets the most out of Azure Durable Functions, and a team whose workloads already sit in Lambda gets the most out of the Lambda feature. For applications running somewhere else, or across more than one platform, the portable model is the one that doesn't come with a hosting decision attached. Your understanding of steps, replay, and determinism transfers between all three. The code doesn't, because an orchestration API is specific to the platform that defines it, so moving between them means rewriting the workflow rather than redeploying it.
+
+<div>
+  <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse", textAlign: "left" }}>
+    <caption style={{ captionSide: "bottom", textAlign: "left", color: "#b3b3b3", fontSize: "15px", lineHeight: "1.5", paddingTop: "12px" }}>
+      Three implementations of durable functions compared by programming model, state storage, hosting requirement, and the commitment each one creates.
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col" style={{ width: "22%" }}>
+          <span className="sr-only">Compared by</span>
+        </th>
+        <th scope="col" style={{ borderBottom: "1px solid rgba(124,124,124,0.45)", padding: "0 16px 12px", verticalAlign: "bottom" }}>Azure Durable Functions</th>
+        <th scope="col" style={{ borderBottom: "1px solid rgba(124,124,124,0.45)", padding: "0 16px 12px", verticalAlign: "bottom" }}>Lambda durable functions</th>
+        <th scope="col" style={{ borderBottom: "1px solid rgba(124,124,124,0.45)", padding: "0 0 12px 16px", verticalAlign: "bottom" }}>The portable model</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row" style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", padding: "14px 16px 14px 0", verticalAlign: "top" }}>The API</th>
+        <td style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", color: "#b3b3b3", padding: "14px 16px", verticalAlign: "top" }}>Orchestrator, activity and entity functions</td>
+        <td style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", color: "#b3b3b3", padding: "14px 16px", verticalAlign: "top" }}>
+          A handler wrapped in <code>withDurableExecution</code>, given a <code>DurableContext</code>
+        </td>
+        <td style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", color: "#b3b3b3", padding: "14px 0 14px 16px", verticalAlign: "top" }}>Ordinary functions with steps added inline</td>
+      </tr>
+      <tr>
+        <th scope="row" style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", padding: "14px 16px 14px 0", verticalAlign: "top" }}>Where state lives</th>
+        <td style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", color: "#b3b3b3", padding: "14px 16px", verticalAlign: "top" }}>A storage provider you configure, with Durable Task Scheduler recommended</td>
+        <td style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", color: "#b3b3b3", padding: "14px 16px", verticalAlign: "top" }}>Lambda's checkpoint log, with a configurable retention period</td>
+        <td style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", color: "#b3b3b3", padding: "14px 0 14px 16px", verticalAlign: "top" }}>The provider's engine, with your code holding none of it</td>
+      </tr>
+      <tr>
+        <th scope="row" style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", padding: "14px 16px 14px 0", verticalAlign: "top" }}>Where code runs</th>
+        <td style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", color: "#b3b3b3", padding: "14px 16px", verticalAlign: "top" }}>Azure Functions</td>
+        <td style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", color: "#b3b3b3", padding: "14px 16px", verticalAlign: "top" }}>AWS Lambda</td>
+        <td style={{ borderBottom: "1px solid rgba(124,124,124,0.35)", color: "#b3b3b3", padding: "14px 0 14px 16px", verticalAlign: "top" }}>Any compute that serves HTTP, including what you run today</td>
+      </tr>
+      <tr>
+        <th scope="row" style={{ padding: "14px 16px 14px 0", verticalAlign: "top" }}>What you commit to</th>
+        <td style={{ color: "#b3b3b3", padding: "14px 16px", verticalAlign: "top" }}>The Azure Functions programming model</td>
+        <td style={{ color: "#b3b3b3", padding: "14px 16px", verticalAlign: "top" }}>The Lambda runtime and its execution timeout</td>
+        <td style={{ color: "#b3b3b3", padding: "14px 0 14px 16px", verticalAlign: "top" }}>A provider for execution, with the function body still plain TypeScript</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+One name deliberately missing from those columns is [AWS Step Functions](https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html), which coordinates work as a state machine defined outside your code in JSON or ASL. AWS positions Lambda durable functions as the alternative for teams who would rather keep the orchestration in the function itself, and publishes a [comparison](https://docs.aws.amazon.com/lambda/latest/dg/durable-step-functions.html) between the two.
+
+### Azure Durable Functions
+
+[Azure Durable Functions](https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview) is an extension of Azure Functions that lets you write stateful workflows in a serverless environment. The programming model has three function types rather than one. An orchestrator function defines the workflow in procedural code and calls activity functions, which do the actual work. Entity functions hold state that other functions read and write. The runtime handles state, checkpoints, retries, and recovery on your behalf, and the SDK supports C#, JavaScript, TypeScript, Python, PowerShell, and Java.
+
+Azure Durable Functions requires a configured storage provider to persist workflow state. Azure Storage is the long-standing default, using tables and queues. Durable Task Scheduler is now the recommended option, a purpose-built managed backend that runs as a separate Azure resource, holds orchestration and entity state internally without a separate storage account, and ships a dashboard over your orchestration instances. The whole thing runs on Azure Functions, so your workflow code and your hosting decision arrive together.
+
+### AWS Lambda durable functions
+
+[Lambda durable functions](https://docs.aws.amazon.com/lambda/latest/dg/durable-functions.html) add checkpointing to a normal Lambda handler rather than introducing separate function types. You wrap your handler in `withDurableExecution` from the AWS durable execution SDK, and in place of the standard Lambda context your handler receives a `DurableContext` carrying the durable operations. Calling `context.step` runs work with retries and checkpoints the result, and calling `context.wait` pauses without accruing charges. There is also `context.waitForCondition`, spelled `wait_for_condition` in the Python SDK, for polling until something becomes true, and callbacks through `waitForCallback` for suspending until an external system calls back. You deploy with the Lambda console, the AWS CLI, or AWS SAM.
+
+The same replay rule applies here as everywhere else in this model. Lambda keeps a running log of durable operations, resumes by invoking your function from the beginning and substituting stored values, and AWS is explicit that your code has to be deterministic during replay for that to hold. The commitment is the Lambda runtime itself, including its 15-minute ceiling on any single invocation.
+
+### The portable model
+
+The portable model writes the same durable operations as ordinary functions, with no vendor runtime and no second function type to learn. There is no orchestrator calling activities and no wrapper changing the shape of your handler. You write the function you were going to write, then mark the boundaries where state should be saved by moving each unit of work inside a step. The order processing samples above follow that model, and they look like normal TypeScript because that's what they are. Because the function is served over HTTP, your code runs wherever your application already runs, whether that's a serverless platform, a container, an edge runtime, or a long-lived server.
+
+The trade-off is that you're running against a platform either way. A run already in flight is state you don't hold, because its position, its completed step results, and its place in the queue all live in the engine. That's the same bargain the two cloud versions make, where the checkpoint log belongs to Lambda and the orchestration history belongs to your Azure storage provider. What changes is how much of your code the dependency touches, which is bounded by the step calls rather than by the whole program. A dedicated workflow engine such as [Temporal](/compare-to-temporal?ref=blog-what-are-durable-functions) makes a different bargain again, and how that model compares is a separate question from the three here.
+
+## Durable HTTP requests with step.fetch()
+
+Beyond `step.run()` and `step.waitForEvent()`, Inngest provides `step.fetch()` for making durable HTTP requests to third-party APIs:
+
+```ts
 const processFiles = inngest.createFunction(
-  { id: "process-files" },
-  { event: "files/process" },
+  {
+    id: "process-files",
+    triggers: { event: "files/process" },
+  },
   async ({ step }) => {
     // The request is offloaded to Inngest
-    const response = await step.fetch("fetch-files", 
-      "https://api.example.com/files", 
-      {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${process.env.API_KEY}`
-        }
-      }
-    );
+    const response = await step.fetch("https://api.example.com/files", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${process.env.API_KEY}`,
+      },
+    });
 
     // Your function resumes here with the response
     const body = await response.json();
-    
+
     await step.run("process-file", async () => {
       // Process the files...
     });
@@ -244,17 +335,46 @@ const processFiles = inngest.createFunction(
 ```
 
 Benefits of `step.fetch()`:
+
 - Requests execute on Inngest's infrastructure, not your serverless runtime
 - Automatic retries on network failures
-- No impact on your function's execution time limits
-- Full observability of all HTTP requests in the dashboard
+- No impact on your function's execution time limits, which is what makes a slow upstream API survivable on a platform where [raising the timeout doesn't save a long job](/blog/why-raising-your-serverless-timeout-wont-save-long-jobs?ref=blog-what-are-durable-functions)
+- Every call appears in your [Inngest traces](/docs/platform-and-operations/traces?ref=blog-what-are-durable-functions) alongside the steps around it, so a failing request shows up as a trace you can open
 
-[Learn more about step.fetch()](/docs/reference/typescript/functions/fetch)
+[Learn more about step.fetch()](/docs/reference/typescript/v4/functions/fetch?ref=blog-what-are-durable-functions)
 
-## Conclusion
+## Where to start
 
-Durable Functions make it easy to manage complex, long-running processes in modern applications. With their built-in state management, error handling, and resumability, they let developers focus on the app's main functions instead of infrastructure.
+Durable functions make it easy to manage complex, long-running processes in modern applications. With their built-in state management, error handling, and resumability, they let developers focus on the app's main functions instead of infrastructure.
 
-While this article focuses on JavaScript and Inngest's SDK, Durable Functions can be used in many programming languages and platforms. For JavaScript developers, especially with frameworks like Next.js, Durable Functions provide a great method to enhance your app's capabilities as they integrate seamlessly with external services, AI workflows, and other advanced features that demand resilience and long-term execution.
+While this article focuses on TypeScript, JavaScript and Inngest's SDK, durable functions can be used in many programming languages and platforms. For JavaScript developers, especially with frameworks like Next.js, durable functions provide a method to enhance your app's capabilities as they integrate with external services, AI workflows, and other advanced features that demand resilience and long-term execution.
 
-As systems get more complex, using Durable Functions will make your apps more reliable, scalable, and easier to maintain, leading to better software solutions.
+You now have what you need to take one multi-step job in your own codebase and make it durable. Pick the longest one, the job most likely to be half-finished when something restarts, and mark every point where work has actually been committed, such as a card charged, a row written, an email sent, or a file uploaded. Those boundaries are your steps. Move each one inside a `step.run` call with a stable, descriptive ID, replace any polling loop with a wait, and keep anything non-deterministic inside a step rather than in the function body.
+
+Start locally rather than in production. The [Node.js quick start](/docs/durable-execution/quick-start/typescript-quick-start?ref=blog-what-are-durable-functions) gets a first function running on your machine with no account, which is enough to watch a step fail, retry, and resume in a dev server. Then take the longest multi-step job in your codebase, break it into steps, and run it on the [free tier](/pricing?ref=blog-what-are-durable-functions) to see what durable execution looks like on real traffic.
+
+## Frequently asked questions about durable functions
+
+### What are durable functions?
+
+Durable functions are functions that checkpoint their progress as they run, so a failure or restart resumes from the last completed unit of work instead of starting over. Each unit, usually called a step, saves its result and retries independently. The pattern suits long-running tasks such as payment flows, data exports, onboarding sequences, and AI workflows, where repeating completed work is expensive or incorrect.
+
+### Are durable functions the same as Azure Durable Functions?
+
+No. Azure Durable Functions is Microsoft's specific product, an extension of Azure Functions with orchestrator, activity, and entity functions and a configurable storage provider. Durable functions as a general term describes the pattern of checkpointing and replay, which several platforms implement differently. AWS ships its own version for Lambda, and portable implementations run the same model on compute you already have without a vendor-specific programming model.
+
+### What is the difference between durable functions and AWS Step Functions?
+
+Step Functions coordinates work as a state machine defined outside your code, in JSON or ASL, with your Lambda functions as the tasks it invokes. Durable functions keep the orchestration inside the function itself, as ordinary control flow in your programming language. AWS positions Lambda durable functions as the alternative for teams who would rather write the workflow as code than maintain a separate state machine definition.
+
+### Why do durable functions have to be deterministic?
+
+Because the function body is replayed rather than resumed in place. On each pass the runtime executes your code from the top, substituting saved results for operations that already completed. Anything non-deterministic sitting outside a step, such as a random value or the current timestamp, produces a different result on every pass and makes the run inconsistent. Keeping that work inside a step saves the first result and reuses it.
+
+### Can you write durable functions in Node.js and TypeScript?
+
+Yes. All three implementations support it. Azure Durable Functions supports JavaScript and TypeScript alongside C#, Python, PowerShell, and Java. The AWS durable execution SDK covers JavaScript and TypeScript, Python, and Java. Inngest's SDK is TypeScript-first, with Python and Go also available, and the functions are ordinary async TypeScript served over an HTTP endpoint in your existing app.
+
+### How do durable functions handle retries and idempotency?
+
+Retries are automatic and scoped to the step that failed, so completed steps return their saved results instead of running again. Inngest allows four retries after the initial attempt by default, and each step keeps its own counter. [Idempotency](/docs/durable-execution/guides-and-advanced/idempotency?ref=blog-what-are-durable-functions) is still yours to handle inside a step, because a call can succeed and then time out before its result is recorded, leaving the retry to repeat a write.
