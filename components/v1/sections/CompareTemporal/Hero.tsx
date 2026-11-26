@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import HeroDashboard from "@/components/v1/sections/CompareTemporal/HeroDashboard";
+import CompareTemporalTestimonials from "@/components/v1/sections/CompareTemporal/Testimonials";
 import { tweens } from "@/utils/v1/springs";
 
 /**
@@ -49,7 +50,7 @@ export default function Hero() {
   return (
     <section
       aria-labelledby="ct-hero-headline"
-      className="relative overflow-x-clip"
+      className="relative"
       style={{ backgroundColor: IVORY }}
     >
       {/* Fine sand-grain over the ivory — SVG fractal noise (clean, not
@@ -86,14 +87,15 @@ export default function Hero() {
           </motion.h1>
 
           <motion.div
-            className="flex max-w-[480px] flex-col gap-5 text-v1-body-lg [font-size:clamp(0.95rem,1.2vw,1.0625rem)] [line-height:1.55]"
+            className="text-v1-body-lg flex max-w-[480px] flex-col gap-5 [font-size:clamp(0.95rem,1.2vw,1.0625rem)] [line-height:1.55]"
             {...entry(280, SUBINK)}
           >
             <p>
               If you&apos;re evaluating Temporal alternatives, Inngest vs
-              Temporal is just a question about whether you want to spend more
-              time on code, or the infrastructure around it. Inngest lets you
-              ship faster, no matter how your code is written or where it lives.
+              Temporal is a question of what needs to be durable, who should own
+              it, and how fast it should scale. Only Inngest lets you build AI
+              and non-AI workflows in one SDK, deployed anywhere, with zero
+              extra infra.
             </p>
           </motion.div>
 
@@ -122,7 +124,7 @@ export default function Hero() {
               variant="secondaryLight"
               className="!w-full sm:!w-auto"
             >
-              View full comparison
+              Comparison
             </ButtonLink>
           </motion.div>
         </div>
@@ -132,10 +134,15 @@ export default function Hero() {
             but capped (max-w) so it stops scaling on ultra-wide screens;
             the left rail (flex-1) absorbs the surplus width instead. */}
         <motion.div
-          className="w-full px-6 pb-20 sm:px-9 lg:min-w-0 lg:w-[56%] lg:max-w-[1080px] lg:px-0 lg:py-[155px]"
+          className="w-full px-6 pb-12 sm:px-9 lg:w-[56%] lg:min-w-0 lg:max-w-[1080px] lg:overflow-visible lg:px-0 lg:pb-10 lg:pt-[120px]"
           {...entry(360)}
         >
-          <HeroDashboard />
+          {/* Bottom padding is part of the positioning box so the fanned
+              cards can hang off the dashboard without leaving the hero. */}
+          <div className="relative lg:pb-16">
+            <HeroDashboard />
+            <CompareTemporalTestimonials />
+          </div>
         </motion.div>
       </div>
     </section>

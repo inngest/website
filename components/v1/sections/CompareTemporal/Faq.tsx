@@ -1,4 +1,6 @@
-import SharedFaq, { type Faq as FaqItem } from "@/components/v1/sections/AI/Faq";
+import SharedFaq, {
+  type Faq as FaqItem,
+} from "@/components/v1/sections/AI/Faq";
 
 /**
  * Compare-to-Temporal FAQ — reuses the shared AI/Faq accordion with the
@@ -22,8 +24,7 @@ const FAQS: FaqItem[] = [
     id: "scale",
     question: "Can Inngest handle the same scale as Temporal?",
     answer:
-      "Inngest orchestrates AI workflows by invoking your functions via HTTP between steps. You write workflows as normal async functions and wrap logic in step.run(). Inngest handles retry logic, state, and scheduling between steps — no extra queues, workers, or stateful backends required.",
-    link: { label: "Quick-start guide", href: "/docs/getting-started/nextjs-quick-start" },
+      "Yes. Inngest runs production workloads at 100k+ executions per second, and the ceilings that matter at scale are published per plan: queue depth runs from 100,000 on Free to 10 million and up on Business, and concurrency scales alongside it. Ease of setup is a product decision, not a capacity ceiling. Where Temporal still has the edge is at mega-enterprise scale, with a platform team already operating the cluster behind it.",
   },
   {
     id: "prototypes",
@@ -44,8 +45,27 @@ const FAQS: FaqItem[] = [
       "Yes. Inngest is open-source and can be self-hosted. The cloud product adds managed infrastructure, observability, and reliability on top — but the core engine is yours to run.",
   },
   {
+    id: "self-host-both",
+    question: "Can I self-host Inngest and Temporal?",
+    answer:
+      "Both, yes. Temporal’s server is open source and self-hostable. It needs a persistence database — Cassandra, MySQL, or PostgreSQL — and a visibility store. Elasticsearch or OpenSearch is the usual choice once search gets large; current servers can also use MySQL or PostgreSQL for advanced visibility. You keep four services running: frontend, history, matching, and Temporal’s internal worker. Inngest is open source and self-hostable too. A single node runs on an embedded store and SQLite, and a real installation points at external Redis and PostgreSQL. Neither is free of operational work, and Temporal has more of it.",
+  },
+  {
+    id: "worker-fleet-cost",
+    question: "What does Temporal cost once you include the worker fleet?",
+    answer:
+      "Temporal Cloud bills Actions from $50 per million plus Active and Retained Storage by the gigabyte-hour, with a support plan on top. The worker fleet is separate and it’s yours: the compute the workers run on, the capacity you size for peak, and the rotation that gets paged when a worker deployment goes wrong. Temporal is explicit that your Workflow and Activity code only runs in Workers under your control, on Cloud included.",
+  },
+  {
+    id: "time-to-first",
+    question: "How long does it take to get a first durable workflow running?",
+    answer:
+      "On Inngest, minutes. One command starts a local execution environment, and wrapping an existing function in step.run() gives you a durable workflow you can trigger and inspect. Shipping it is one HTTP route and a key. On Temporal, the first run waits on infrastructure you have to stand up first, which means a service to reach, a database behind it, and a worker process written, registered and deployed.",
+  },
+  {
     id: "github-stars",
-    question: "Temporal has far more GitHub stars — doesn't that mean it's better?",
+    question:
+      "Temporal has far more GitHub stars — doesn't that mean it's better?",
     answer:
       "Temporal has been around longer and targets a different audience — large engineering teams with dedicated platform engineers who can manage distributed worker infrastructure. Inngest is newer and optimized for teams who want durable execution without that operational overhead. Stars reflect history and audience, not fit for your use case.",
   },
@@ -59,13 +79,19 @@ const FAQS: FaqItem[] = [
     id: "cost",
     question: "How does cost actually compare?",
     answer:
-      "Temporal Cloud starts at $100/month plus the cost of running your own worker fleet — compute, scaling, and maintenance. Inngest starts at $99/month with no workers to run. At scale, the more meaningful difference is operational cost: Inngest removes an entire infrastructure layer that Temporal requires you to manage.",
+      "Temporal Cloud no longer charges an entry plan fee. Developer support carries no base monthly charge and bills 10% of usage, with Actions from $50 per million plus storage by the gigabyte-hour, and Business is the greater of $500 a month or 10% of usage, with 2.5 million Actions and a storage allocation included before overage. On top of either, you pay for the worker fleet, which Temporal doesn’t run. Inngest starts free, Pro starts at $99 a month, and no fleet appears in the bill.",
+  },
+  {
+    id: "other-alternatives",
+    question: "What other Temporal alternatives should I look at?",
+    answer:
+      "If Inngest isn’t the fit, the usual shortlist is Trigger.dev, Restate, DBOS, AWS Step Functions and Cloudflare Workflows, plus hand-rolled queues like BullMQ or Celery. Trigger.dev runs your code on their compute, which is the opposite trade from Inngest’s. Step Functions and Workflows tie you to one cloud. A queue gets you retries and little else, with no checkpointing, no long sleeps, and nothing to query when a job half-ran.",
   },
   {
     id: "ai-advantage",
     question: "Where does Inngest have a specific advantage for AI workloads?",
     answer:
-      "Temporal's execution model requires workflow code to be strictly deterministic — it replays history to reconstruct state after failures. LLMs are inherently non-deterministic, which means you have to carefully isolate every model call inside an Activity to prevent replay errors. Inngest was architected around steps from the start, with no determinism requirement on the orchestration layer. Every LLM call is naturally a step. There's no replay model to design around, no risk of non-deterministic code causing execution failures, and no mental overhead separating \"workflow code\" from \"activity code.\" For AI, that's a meaningful difference.",
+      'Temporal\'s execution model requires workflow code to be strictly deterministic — it replays history to reconstruct state after failures. LLMs are inherently non-deterministic, which means you have to carefully isolate every model call inside an Activity to prevent replay errors. Inngest was architected around steps from the start, with no determinism requirement on the orchestration layer. Every LLM call is naturally a step. There\'s no replay model to design around, no risk of non-deterministic code causing execution failures, and no mental overhead separating "workflow code" from "activity code." For AI, that\'s a meaningful difference.',
   },
 ];
 

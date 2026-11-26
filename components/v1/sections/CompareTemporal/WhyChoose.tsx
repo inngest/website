@@ -52,7 +52,7 @@ const CARDS: FeatureCard[] = [
     vectorWidth: 81,
     vectorHeight: 91, // viewBox 80.98 × 90.75
     bodyLines: [
-      "Inngest calls your existing HTTP server – no worker processes, no queue confir, no ops surface to maintain.",
+      "Inngest calls your HTTP server, so anyone can run it. No queues to configure, no infra to maintain.",
     ],
   },
   {
@@ -74,7 +74,7 @@ const CARDS: FeatureCard[] = [
     vectorWidth: 81,
     vectorHeight: 91, // viewBox 80.75 × 90.75
     bodyLines: [
-      "Temporal’s strongest SDK is Go, Inngest treats every language as a first-class citizen.",
+      "Temporal’s strongest SDK is Go. Inngest runs anywhere that speaks HTTP.",
     ],
   },
 ];

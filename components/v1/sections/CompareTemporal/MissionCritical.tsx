@@ -7,7 +7,7 @@ import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShell";
 
 /**
- * "Built for mission-critical infrastructure" — six trust/compliance
+ * "Inngest is built for mission-critical workflows and agents" — six trust/compliance
  * badges, each a label over a line-art icon (icons from the
  * inngest-icons-5-26 set, white-on-transparent PNGs).
  */
@@ -19,9 +19,15 @@ interface Badge {
 
 const BADGES: Badge[] = [
   { label: "SOC 2 Compliant", icon: "/assets/v1/mission-critical/soc2.png" },
-  { label: "HIPAA BAA Available", icon: "/assets/v1/mission-critical/hipaa.png" },
+  {
+    label: "HIPAA BAA Available",
+    icon: "/assets/v1/mission-critical/hipaa.png",
+  },
   { label: "E2E Encryption", icon: "/assets/v1/mission-critical/e2e.png" },
-  { label: "100k+ Executions/Sec", icon: "/assets/v1/mission-critical/executions.png" },
+  {
+    label: "100k+ Executions/Sec",
+    icon: "/assets/v1/mission-critical/executions.png",
+  },
   { label: "SSO & SAML", icon: "/assets/v1/mission-critical/sso.png" },
   { label: "Low Latency", icon: "/assets/v1/mission-critical/latency.png" },
 ];
@@ -35,11 +41,18 @@ export default function MissionCritical() {
     >
       <SectionHeader
         id="ct-trust-heading"
-        titleClassName="lg:max-w-[780px]"
-        title="Built for mission-critical infrastructure."
+        title={
+          <>
+            Inngest is built for
+            <br className="hidden lg:block" /> mission-critical workflows and
+            agents.
+          </>
+        }
       />
 
-      <ul className={`${V1_HEADER_CONTENT_MT} grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 lg:grid-cols-6 lg:gap-x-[28px]`}>
+      <ul
+        className={`${V1_HEADER_CONTENT_MT} grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 lg:grid-cols-6 lg:gap-x-[28px]`}
+      >
         {BADGES.map((badge, i) => (
           <motion.li
             key={badge.label}

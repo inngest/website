@@ -20,7 +20,7 @@ const VIDEO_ID = "khBvrr7YOm8";
 const ENTERPRISE_POINTS = [
   "Migration from Temporal support",
   "Custom SLAs & uptime guarantees",
-  "SOC2, HIPPA BAA, SSO & SAML",
+  "SOC 2, HIPAA BAA, SSO & SAML",
   "Dedicated onboarding & support",
 ];
 
@@ -33,7 +33,14 @@ function Pill({ children }: { children: React.ReactNode }) {
 }
 
 const CheckIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="mt-[1px] shrink-0">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+    className="mt-[1px] shrink-0"
+  >
     <path
       d="M5 12.5 L 10 17 L 19 7"
       stroke="rgb(var(--color-v1-green-200))"
@@ -72,9 +79,17 @@ function VideoEmbed() {
             className="h-full w-full object-cover"
           />
           <span className="absolute inset-0 flex items-center justify-center">
-            <span className="flex size-[64px] items-center justify-center rounded-full bg-v1-frost/25 backdrop-blur-sm motion-safe:transition-transform group-hover:scale-105">
-              <svg width="22" height="26" viewBox="0 0 22 26" aria-hidden="true">
-                <path d="M0 0 L22 13 L0 26 Z" fill="rgb(var(--color-v1-frost))" />
+            <span className="flex size-[64px] items-center justify-center rounded-full bg-v1-frost/25 backdrop-blur-sm group-hover:scale-105 motion-safe:transition-transform">
+              <svg
+                width="22"
+                height="26"
+                viewBox="0 0 22 26"
+                aria-hidden="true"
+              >
+                <path
+                  d="M0 0 L22 13 L0 26 Z"
+                  fill="rgb(var(--color-v1-frost))"
+                />
               </svg>
             </span>
           </span>
@@ -106,7 +121,11 @@ export default function CtaBand() {
             </div>
             <VideoEmbed />
             <div className="mt-auto flex flex-col items-center gap-[14px] pt-3">
-              <ButtonLink href={SIGNUP_URL} variant="accent" className="!w-full sm:!w-auto">
+              <ButtonLink
+                href={SIGNUP_URL}
+                variant="accent"
+                className="!w-full sm:!w-auto"
+              >
                 Start building free
               </ButtonLink>
               <p className="text-v1-body-sm text-v1-frost/50">
@@ -126,7 +145,7 @@ export default function CtaBand() {
                 Talk to our team
               </h3>
               <p className="text-v1-body-md leading-[1.5] text-v1-frost/70">
-                Migration support, custom SLAs, SS, HIPPA BAA, and a solution
+                Migration support, custom SLAs, SSO, HIPAA BAA, and a solution
                 scoped to your architecture.
               </p>
             </div>
@@ -135,7 +154,7 @@ export default function CtaBand() {
               {ENTERPRISE_POINTS.map((point) => (
                 <li
                   key={point}
-                  className="flex items-start gap-3 text-v1-body-md leading-[1.5] text-v1-frost"
+                  className="text-v1-body-md flex items-start gap-3 leading-[1.5] text-v1-frost"
                 >
                   <CheckIcon />
                   {point}
@@ -168,11 +187,15 @@ export default function CtaBand() {
             </div>
 
             <div className="mt-auto flex flex-col items-center gap-[14px] pt-3">
-              <ButtonLink href={CONTACT_URL} variant="accent" className="!w-full sm:!w-auto">
+              <ButtonLink
+                href={CONTACT_URL}
+                variant="accent"
+                className="!w-full sm:!w-auto"
+              >
                 Talk to us
               </ButtonLink>
               <p className="text-v1-body-sm text-v1-frost/50">
-                Usually responds within 1 business day
+                Architectural review, no pressure.
               </p>
             </div>
           </motion.div>

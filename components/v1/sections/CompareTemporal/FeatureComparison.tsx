@@ -24,8 +24,8 @@ import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShe
  * section is off-screen and stops permanently on any manual click. On
  * mobile the tabs stack vertically.
  *
- * NOTE: Backend Engineer's non-Core categories are authored copy — only
- * its Core Execution view is specified in the design.
+ * Each persona has its own category set. AI Engineer is left as-is;
+ * the other four personas carry the current comparison copy.
  */
 
 // Row dividers are a 40%-grey hairline.
@@ -57,7 +57,9 @@ interface Persona {
 // lead row of several personas' first category.
 const TIME_TO_FIRST: Row = {
   feature: "Time to first execution",
-  temporal: [t("Hours to days – provision workers, server, and database first")],
+  temporal: [
+    t("Hours to days – provision workers, server, and database first"),
+  ],
   inngest: [
     t("Minutes – "),
     c("npx inngest-cli@latest dev"),
@@ -78,8 +80,15 @@ const PERSONAS: Persona[] = [
           TIME_TO_FIRST,
           {
             feature: "Multi-step execution",
-            temporal: [t("Workflows + Activities – their terms for functions & steps")],
-            inngest: [c("step.run()"), t(" – plain async, automatic persistence (Temporal calls these Activities)")],
+            temporal: [
+              t("Workflows + Activities – their terms for functions & steps"),
+            ],
+            inngest: [
+              c("step.run()"),
+              t(
+                " – plain async, automatic persistence (Temporal calls these Activities)"
+              ),
+            ],
           },
           {
             feature: "Fan-out / Parallel Steps",
@@ -92,13 +101,45 @@ const PERSONAS: Persona[] = [
             inngest: [t("Native cron trigger (Temporal: Schedules)")],
           },
           {
+            feature: "Long sleeps",
+            temporal: [
+              t(
+                "Timers – Temporal’s term; the Workflow Execution stays open while it waits, and open Workflows count as Active Storage on Temporal Cloud"
+              ),
+            ],
+            inngest: [
+              c("step.sleep()"),
+              t(
+                " up to a year, within the plan’s run limit, and a sleeping run holds no concurrency slot"
+              ),
+            ],
+          },
+          {
+            feature: "Child workflows",
+            temporal: [
+              t(
+                "Child Workflows – Temporal’s term; each gets its own Event History and can run on its own Workers, capped at 2,000 incomplete children per Workflow by default"
+              ),
+            ],
+            inngest: [
+              c("step.invoke()"),
+              t(" – call another function as a step and get its result back"),
+            ],
+          },
+          {
             feature: "SDK ergonomics",
-            temporal: [t("Determinism rules add cognitive hoverhead; Go SKD most mature")],
+            temporal: [
+              t("Determinism rules add cognitive overhead; Go SDK most mature"),
+            ],
             inngest: [t("Plain async/await — no determinism constraints")],
           },
           {
             feature: "Language support",
-            temporal: [t("Go, Java, TypeScript, Python – Go SKD significantly ahead; Java unique to Temporal")],
+            temporal: [
+              t(
+                "Go, Java, TypeScript, Python – Go SDK significantly ahead; Java unique to Temporal"
+              ),
+            ],
             inngest: [t("TypeScript, Python, Go — any HTTP runtime")],
           },
         ],
@@ -109,13 +150,24 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "Step memoization",
-            temporal: [t("Activity results are cached, but retries re-run the whole activity")],
+            temporal: [
+              t(
+                "Activity results are cached, but retries re-run the whole activity"
+              ),
+            ],
             inngest: [t("Completed steps never re-run on retry")],
           },
           {
             feature: "Human-in-the-loop",
-            temporal: [t("Signals — Temporal’s term for what Inngest calls waitForEvent")],
-            inngest: [c("step.waitForEvent()"), t(" — native primitive (Temporal calls these Signals)")],
+            temporal: [
+              t(
+                "Signals — Temporal’s term for what Inngest calls waitForEvent"
+              ),
+            ],
+            inngest: [
+              c("step.waitForEvent()"),
+              t(" — native primitive (Temporal calls these Signals)"),
+            ],
           },
           {
             feature: "Durable HTTP endpoints",
@@ -130,17 +182,27 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "Step-level traces",
-            temporal: [t("Event History (Temporal’s term) — workflow-level, less granular per step")],
+            temporal: [
+              t(
+                "Event History (Temporal’s term) — workflow-level, less granular per step"
+              ),
+            ],
             inngest: [t("Every step timed and inspectable in the dashboard")],
           },
           {
             feature: "Queue delay vs. execution time",
-            temporal: [t("Not broken out natively — custom instrumentation needed")],
+            temporal: [
+              t("Not broken out natively — custom instrumentation needed"),
+            ],
             inngest: [t("Surfaced separately per run")],
           },
           {
             feature: "Bulk replay",
-            temporal: [t("Workflow reset (Temporal’s term) — per-workflow via CLI, no bulk UI")],
+            temporal: [
+              t(
+                "Workflow reset (Temporal’s term) — per-workflow via CLI, no bulk UI"
+              ),
+            ],
             inngest: [t("Re-run failed functions in bulk from the dashboard")],
           },
         ],
@@ -151,18 +213,87 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "Per-key concurrency",
-            temporal: [t("Task queues — Temporal’s term; sized at worker level, not per-key")],
+            temporal: [
+              t(
+                "Task queues — Temporal’s term; sized at worker level, not per-key"
+              ),
+            ],
             inngest: [t("One line of function config")],
           },
           {
             feature: "Rate limiting",
-            temporal: [t("No built-in rate limiting — requires custom implementation")],
+            temporal: [
+              t("No built-in rate limiting — requires custom implementation"),
+            ],
             inngest: [t("Built-in, per function or per user")],
           },
           {
             feature: "Debouncing",
-            temporal: [t("No native debouncing — achievable with custom signal/timer logic")],
+            temporal: [
+              t(
+                "No native debouncing — achievable with custom signal/timer logic"
+              ),
+            ],
             inngest: [t("Native")],
+          },
+          {
+            feature: "Batching",
+            temporal: [
+              t(
+                "Event Accumulator – Temporal’s term for the pattern; a Workflow collects Signals, dedupes them and waits out an inactivity timer"
+              ),
+            ],
+            inngest: [
+              c("batchEvents"),
+              t(" with a maximum size, a timeout and an optional grouping key"),
+            ],
+          },
+        ],
+      },
+      {
+        key: "setup",
+        label: "Setup and operations",
+        rows: [
+          {
+            feature: "Setup effort",
+            temporal: [
+              t(
+                "Provision the Temporal Service, give it a database, then write and deploy worker processes before the first Workflow runs"
+              ),
+            ],
+            inngest: [
+              t(
+                "One CLI command for a full local environment, then one HTTP route in the app you already deploy"
+              ),
+            ],
+          },
+          {
+            feature: "Self-hosting",
+            temporal: [
+              t(
+                "Self-hostable. The server needs a persistence database — Cassandra, MySQL, or PostgreSQL — and a visibility store. Elasticsearch or OpenSearch is the usual choice once search gets large; current servers can also use MySQL or PostgreSQL for advanced visibility. Four services to run: frontend, history, matching, and Temporal’s internal worker service"
+              ),
+            ],
+            inngest: [
+              t("Self-hostable. "),
+              c("inngest start"),
+              t(
+                " runs a single node on an embedded store and SQLite, and its own help labels that mode beta. A larger installation points at external Redis and PostgreSQL"
+              ),
+            ],
+          },
+          {
+            feature: "Total cost of ownership",
+            temporal: [
+              t(
+                "Temporal Cloud usage, with Actions from $50 per million plus Active and Retained Storage by the gigabyte-hour, and a support plan on top: no base fee and 10% of usage on Developer, or the greater of $500 a month and 10% on Business, which includes 2.5 million Actions and a storage allocation. Then the compute and on-call for your worker fleet"
+              ),
+            ],
+            inngest: [
+              t(
+                "An Inngest plan, free to start and from $99 a month on Pro, plus the hosting you already pay for. No separate fleet in the bill"
+              ),
+            ],
           },
         ],
       },
@@ -179,23 +310,42 @@ const PERSONAS: Persona[] = [
           TIME_TO_FIRST,
           {
             feature: "Step memoization",
-            temporal: [t("~ Activity results cached, but not at per-step granularity within a retry")],
+            temporal: [
+              t(
+                "~ Activity results cached, but not at per-step granularity within a retry"
+              ),
+            ],
             inngest: [t("Completed steps never re-run on retry")],
           },
           {
             feature: "Human-in-the-loop",
-            temporal: [t("~ Signals (Temporal’s term) — require channel, Selector, and handler setup")],
-            inngest: [c("step.waitForEvent()"), t(" — native, no boilerplate (Temporal: Signals)")],
+            temporal: [
+              t(
+                "~ Signals (Temporal’s term) — require channel, Selector, and handler setup"
+              ),
+            ],
+            inngest: [
+              c("step.waitForEvent()"),
+              t(" — native, no boilerplate (Temporal: Signals)"),
+            ],
           },
           {
             feature: "Inter-step latency",
-            temporal: [t("~ Synchronous history write per step — a deliberate durability tradeoff that adds latency")],
-            inngest: [t("Near-zero with Checkpointing — ~50% faster end-to-end")],
+            temporal: [
+              t(
+                "~ Synchronous history write per step — a deliberate durability tradeoff that adds latency"
+              ),
+            ],
+            inngest: [
+              t("Near-zero with Checkpointing — ~50% faster end-to-end"),
+            ],
           },
           {
             feature: "Durable HTTP endpoints",
             temporal: [t("Not natively supported")],
-            inngest: [t("Durability for streaming / real-time agent responses")],
+            inngest: [
+              t("Durability for streaming / real-time agent responses"),
+            ],
           },
         ],
       },
@@ -205,17 +355,23 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "Per-user concurrency",
-            temporal: [t("Worker-level only — per-key isolation must be built manually")],
+            temporal: [
+              t("Worker-level only — per-key isolation must be built manually"),
+            ],
             inngest: [c("concurrency: key: 'event.data.userId'")],
           },
           {
             feature: "Rate limiting",
-            temporal: [t("No built-in rate limiting — requires custom implementation")],
+            temporal: [
+              t("No built-in rate limiting — requires custom implementation"),
+            ],
             inngest: [t("Built-in, one line of config")],
           },
           {
             feature: "Debouncing",
-            temporal: [t("No native debouncing — achievable with signals and timers")],
+            temporal: [
+              t("No native debouncing — achievable with signals and timers"),
+            ],
             inngest: [t("Native")],
           },
         ],
@@ -226,17 +382,31 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "Step-level traces",
-            temporal: [t("Event History (Temporal’s term) — less granular than Inngest traces")],
-            inngest: [t("Every step timed, status visible, inputs inspectable")],
+            temporal: [
+              t(
+                "Event History (Temporal’s term) — less granular than Inngest traces"
+              ),
+            ],
+            inngest: [
+              t("Every step timed, status visible, inputs inspectable"),
+            ],
           },
           {
             feature: "Queue delay vs. execution time",
-            temporal: [t("Not broken out natively — harder to distinguish slow queue from slow code")],
+            temporal: [
+              t(
+                "Not broken out natively — harder to distinguish slow queue from slow code"
+              ),
+            ],
             inngest: [t("Separated from execution time in every trace")],
           },
           {
             feature: "Bulk replay",
-            temporal: [t("Workflow reset (Temporal’s term) — per-workflow via CLI, no bulk UI")],
+            temporal: [
+              t(
+                "Workflow reset (Temporal’s term) — per-workflow via CLI, no bulk UI"
+              ),
+            ],
             inngest: [t("One-click from the dashboard")],
           },
         ],
@@ -247,17 +417,29 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "AgentKit",
-            temporal: [t("No native agent framework — integrates well with LangChain and others")],
+            temporal: [
+              t(
+                "No native agent framework — integrates well with LangChain and others"
+              ),
+            ],
             inngest: [t("First-party framework for multi-agent networks")],
           },
           {
             feature: "Language support",
-            temporal: [t("Go SDK is excellent; TypeScript and Python are functional and improving quickly")],
+            temporal: [
+              t(
+                "Go SDK is excellent; TypeScript and Python are functional and improving quickly"
+              ),
+            ],
             inngest: [t("TypeScript, Python, Go — any HTTP runtime")],
           },
           {
             feature: "Local dev",
-            temporal: [t("Docker-based local server — solid once configured, no MCP support")],
+            temporal: [
+              t(
+                "Docker-based local server — solid once configured, no MCP support"
+              ),
+            ],
             inngest: [t("One command, MCP integration for AI coding tools")],
           },
         ],
@@ -276,22 +458,38 @@ const PERSONAS: Persona[] = [
           {
             feature: "Worker processes",
             temporal: [t("You deploy, scale, and monitor workers")],
-            inngest: [t("None — Inngest has no worker concept; calls your existing HTTP server")],
+            inngest: [
+              t(
+                "None — Inngest has no worker concept; calls your existing HTTP server"
+              ),
+            ],
           },
           {
             feature: "Orchestration server",
-            temporal: [t("Self-hosted or Temporal Cloud — self-hosted suits teams already running their own infra")],
+            temporal: [
+              t(
+                "Self-hosted or Temporal Cloud — self-hosted suits teams already running their own infra"
+              ),
+            ],
             inngest: [t("Fully managed")],
           },
           {
             feature: "Database",
-            temporal: [t("Cassandra or PostgreSQL — you manage")],
+            temporal: [t("Cassandra, MySQL or PostgreSQL — you manage")],
             inngest: [t("None required")],
           },
           {
             feature: "Scaling model",
-            temporal: [t("Worker pools give fine-grained control — good fit if you want that level of tuning")],
-            inngest: [t("Scales with your existing HTTP server — no separate worker fleet")],
+            temporal: [
+              t(
+                "Worker pools give fine-grained control — good fit if you want that level of tuning"
+              ),
+            ],
+            inngest: [
+              t(
+                "Scales with your existing HTTP server — no separate worker fleet"
+              ),
+            ],
           },
         ],
       },
@@ -301,7 +499,11 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "Per-user concurrency",
-            temporal: [t("Task queues — Temporal’s term; powerful but manual, no per-key isolation")],
+            temporal: [
+              t(
+                "Task queues — Temporal’s term; powerful but manual, no per-key isolation"
+              ),
+            ],
             inngest: [t("One line of function config")],
           },
           {
@@ -311,7 +513,11 @@ const PERSONAS: Persona[] = [
           },
           {
             feature: "Multi-tenancy isolation",
-            temporal: [t("Namespaces + Task queues (Temporal’s terms) — more work, but gives full control")],
+            temporal: [
+              t(
+                "Namespaces + Task queues (Temporal’s terms) — more work, but gives full control"
+              ),
+            ],
             inngest: [t("Per-key limits in config — no custom code needed")],
           },
         ],
@@ -322,17 +528,25 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "Step-level traces",
-            temporal: [t("Event History (Temporal’s term) — coarser granularity")],
+            temporal: [
+              t("Event History (Temporal’s term) — coarser granularity"),
+            ],
             inngest: [t("Per-step timing, status, and input/output")],
           },
           {
             feature: "Queue delay visibility",
-            temporal: [t("Not broken out natively — custom instrumentation needed")],
+            temporal: [
+              t("Not broken out natively — custom instrumentation needed"),
+            ],
             inngest: [t("Surfaced separately from execution time")],
           },
           {
             feature: "Metrics export",
-            temporal: [t("Possible via tctl and custom setup — more configuration required")],
+            temporal: [
+              t(
+                "Possible via the Temporal CLI and custom setup — more configuration required"
+              ),
+            ],
             inngest: [t("Native Datadog and Prometheus integrations")],
           },
         ],
@@ -343,7 +557,9 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "SOC 2 / HIPAA",
-            temporal: [t("Temporal Cloud compliant; self-hosted scope is yours")],
+            temporal: [
+              t("Temporal Cloud compliant; self-hosted scope is yours"),
+            ],
             inngest: [t("SOC 2 compliant, HIPAA BAA available")],
           },
           {
@@ -366,12 +582,20 @@ const PERSONAS: Persona[] = [
           TIME_TO_FIRST,
           {
             feature: "Time to first function",
-            temporal: [t("Workers, server, and database required before writing any logic")],
+            temporal: [
+              t(
+                "Workers, server, and database required before writing any logic"
+              ),
+            ],
             inngest: [t("Minutes — wraps your existing code")],
           },
           {
             feature: "Serverless / Next.js support",
-            temporal: [t("Persistent worker processes required — doesn’t fit serverless natively")],
+            temporal: [
+              t(
+                "Persistent worker processes required — doesn’t fit serverless natively"
+              ),
+            ],
             inngest: [t("Native — no persistent processes needed")],
           },
           {
@@ -381,7 +605,11 @@ const PERSONAS: Persona[] = [
           },
           {
             feature: "Pricing to start",
-            temporal: [t("Self-hosted is free; Temporal Cloud requires a contract")],
+            temporal: [
+              t(
+                "Self-hosted is free; Temporal Cloud is pay-as-you-go with no base fee on Developer"
+              ),
+            ],
             inngest: [t("Free tier, no credit card required")],
           },
         ],
@@ -392,13 +620,24 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "Step memoization",
-            temporal: [t("Activities are cached on success — same principle, less granular")],
+            temporal: [
+              t(
+                "Activities are cached on success — same principle, less granular"
+              ),
+            ],
             inngest: [t("Retries never re-invoke completed steps")],
           },
           {
             feature: "Human-in-the-loop",
-            temporal: [t("Signals (Temporal’s term) — work well, just more code to wire up")],
-            inngest: [c("step.waitForEvent()"), t(" — one line (Signals in Temporal)")],
+            temporal: [
+              t(
+                "Signals (Temporal’s term) — work well, just more code to wire up"
+              ),
+            ],
+            inngest: [
+              c("step.waitForEvent()"),
+              t(" — one line (Signals in Temporal)"),
+            ],
           },
           {
             feature: "Background jobs & cron",
@@ -408,7 +647,9 @@ const PERSONAS: Persona[] = [
           {
             feature: "Observability",
             temporal: [t("Workflow history — less granular, no bulk replay")],
-            inngest: [t("Per-key limits in config — no custom code needed")],
+            inngest: [
+              t("Per-step traces, with bulk replay from the dashboard"),
+            ],
           },
         ],
       },
@@ -425,7 +666,9 @@ const PERSONAS: Persona[] = [
           TIME_TO_FIRST,
           {
             feature: "Infrastructure to own",
-            temporal: [t("Workers, server, and database before writing any logic")],
+            temporal: [
+              t("Workers, server, and database before writing any logic"),
+            ],
             inngest: [t("Zero — no workers, servers, or databases")],
           },
           {
@@ -435,17 +678,27 @@ const PERSONAS: Persona[] = [
           },
           {
             feature: "Team ramp-up",
-            temporal: [t("Steeper learning curve; pays off for teams going deep on Go")],
+            temporal: [
+              t("Steeper learning curve; pays off for teams going deep on Go"),
+            ],
             inngest: [t("Familiar async/await — no new paradigm")],
           },
           {
             feature: "Pricing",
-            temporal: [t("Temporal Cloud pricing is custom at scale — standard for enterprise infra")],
+            temporal: [
+              t(
+                "Published pay-as-you-go — Actions from $50 per million, no base fee on Developer, $500 a month minimum on Business, including 2.5 million Actions and storage, custom above 200M Actions"
+              ),
+            ],
             inngest: [t("Usage-based, public pricing, free tier")],
           },
           {
             feature: "Scale ceiling",
-            temporal: [t("Proven at extreme scale — one of Temporal’s genuine strengths")],
+            temporal: [
+              t(
+                "Proven at extreme scale — one of Temporal’s genuine strengths"
+              ),
+            ],
             inngest: [t("100k+ executions/sec, enterprise SLAs available")],
           },
           {
@@ -461,18 +714,30 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "Purpose-built primitives",
-            temporal: [t("Fully capable — designed for deterministic logic, which shows at the edges for AI")],
+            temporal: [
+              t(
+                "Fully capable — designed for deterministic logic, which shows at the edges for AI"
+              ),
+            ],
             inngest: [t("HITL, step memoization, flow control — first-class")],
           },
           {
             feature: "Multi-tenant flow control",
-            temporal: [t("No built-in primitives — must be implemented from scratch")],
+            temporal: [
+              t("No built-in primitives — must be implemented from scratch"),
+            ],
             inngest: [t("Per-user concurrency and rate limits in config")],
           },
           {
             feature: "Agent observability",
-            temporal: [t("Workflow-level history — less granular for debugging agent runs")],
-            inngest: [t("Step-level traces, queue delay, flow control visibility")],
+            temporal: [
+              t(
+                "Workflow-level history — less granular for debugging agent runs"
+              ),
+            ],
+            inngest: [
+              t("Step-level traces, queue delay, flow control visibility"),
+            ],
           },
         ],
       },
@@ -482,18 +747,30 @@ const PERSONAS: Persona[] = [
         rows: [
           {
             feature: "Compliance",
-            temporal: [t("Temporal Cloud compliant; self-hosted scope is yours")],
+            temporal: [
+              t("Temporal Cloud compliant; self-hosted scope is yours"),
+            ],
             inngest: [t("SOC 2, HIPAA BAA available")],
           },
           {
             feature: "Multi-region reliability",
-            temporal: [t("Active-active multi-region on Temporal Cloud — a genuine strength")],
+            temporal: [
+              t(
+                "Active-active multi-region on Temporal Cloud — a genuine strength"
+              ),
+            ],
             inngest: [t("Managed uptime; no self-service multi-region")],
           },
           {
             feature: "Ecosystem maturity",
-            temporal: [t("Larger community, more enterprise deployments, longer track record")],
-            inngest: [t("Growing fast — strong community, younger than Temporal’s")],
+            temporal: [
+              t(
+                "Larger community, more enterprise deployments, longer track record"
+              ),
+            ],
+            inngest: [
+              t("Growing fast — strong community, younger than Temporal’s"),
+            ],
           },
         ],
       },
@@ -507,7 +784,7 @@ function Chevron({ isOpen }: { isOpen: boolean }) {
       viewBox="0 0 24 24"
       className={cn(
         "size-6 shrink-0 text-v1-frost motion-safe:transition-transform motion-safe:duration-200",
-        isOpen ? "rotate-180" : "",
+        isOpen ? "rotate-180" : ""
       )}
       aria-hidden="true"
     >
@@ -528,7 +805,7 @@ function RichCell({ cell, tone }: { cell: Cell; tone: "dim" | "frost" }) {
     <p
       className={cn(
         "text-[15px] leading-[1.5] lg:text-[16px]",
-        tone === "dim" ? "text-v1-frost/55" : "text-v1-frost",
+        tone === "dim" ? "text-v1-frost/55" : "text-v1-frost"
       )}
     >
       {cell.map((seg, i) =>
@@ -541,7 +818,7 @@ function RichCell({ cell, tone }: { cell: Cell; tone: "dim" | "frost" }) {
           </code>
         ) : (
           <span key={i}>{seg.t}</span>
-        ),
+        )
       )}
     </p>
   );
@@ -554,7 +831,7 @@ export default function FeatureComparison() {
   // the persona's first category open and resets when the persona
   // changes. Multiple categories can be expanded at once.
   const [openKeys, setOpenKeys] = useState<Set<string>>(
-    () => new Set([PERSONAS[0].categories[0].key]),
+    () => new Set([PERSONAS[0].categories[0].key])
   );
   const toggle = (key: string) =>
     setOpenKeys((prev) => {
@@ -592,7 +869,7 @@ export default function FeatureComparison() {
         {...reveals.item(0)}
         role="tablist"
         aria-label="Choose your role"
-        className={`${V1_HEADER_CONTENT_MT} flex flex-col gap-3 sm:-mx-8 sm:flex-row sm:overflow-x-auto sm:px-8 md:gap-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
+        className={`${V1_HEADER_CONTENT_MT} flex flex-col gap-3 [scrollbar-width:none] sm:-mx-8 sm:flex-row sm:overflow-x-auto sm:px-8 md:gap-4 [&::-webkit-scrollbar]:hidden`}
       >
         {PERSONAS.map((p) => {
           const active = p.key === personaKey;
@@ -605,7 +882,7 @@ export default function FeatureComparison() {
               onClick={() => selectPersona(p.key)}
               className={cn(
                 "group relative flex items-center gap-[10px] whitespace-nowrap rounded-md px-4 py-5 text-left font-v1Mono text-[16px] uppercase leading-[1.5] tracking-[-0.01em] motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-v1-out sm:flex-none",
-                "hover:bg-v1-frost/[0.035] focus-visible:bg-v1-frost/[0.04] focus-visible:outline-none",
+                "hover:bg-v1-frost/[0.035] focus-visible:bg-v1-frost/[0.04] focus-visible:outline-none"
               )}
             >
               {/* Salmon square (active) / steel square (resting). */}
@@ -615,13 +892,15 @@ export default function FeatureComparison() {
                   "block size-2 shrink-0 motion-safe:transition-colors motion-safe:duration-300",
                   active
                     ? "bg-v1-accent-salmon"
-                    : "bg-v1-steel group-hover:bg-v1-frost",
+                    : "bg-v1-steel group-hover:bg-v1-frost"
                 )}
               />
               <span
                 className={cn(
                   "motion-safe:transition-colors motion-safe:duration-300",
-                  active ? "text-v1-frost" : "text-v1-frost/60 group-hover:text-v1-frost",
+                  active
+                    ? "text-v1-frost"
+                    : "text-v1-frost/60 group-hover:text-v1-frost"
                 )}
               >
                 {p.label}
@@ -640,9 +919,16 @@ export default function FeatureComparison() {
         >
           {/* Header row */}
           <div className="grid grid-cols-3 items-center border-b border-v1-frost/40">
-            <HeaderCell className="pl-[34px] pr-6 py-[26px]">Feature</HeaderCell>
-            <HeaderCell className="px-6 py-[26px]" tone="dim">Temporal</HeaderCell>
-            <HeaderCell className="px-6 py-[26px]" icon={<Logo logomarkOnly width={26} />}>
+            <HeaderCell className="py-[26px] pl-[34px] pr-6">
+              Feature
+            </HeaderCell>
+            <HeaderCell className="px-6 py-[26px]" tone="dim">
+              Temporal
+            </HeaderCell>
+            <HeaderCell
+              className="px-6 py-[26px]"
+              icon={<Logo logomarkOnly width={26} />}
+            >
               Inngest
             </HeaderCell>
           </div>
@@ -668,7 +954,7 @@ export default function FeatureComparison() {
                   id={`ct-cat-${cat.key}`}
                   className={cn(
                     "grid motion-safe:transition-[grid-template-rows] motion-safe:duration-300",
-                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                   )}
                 >
                   <div className="overflow-hidden">
@@ -683,9 +969,11 @@ export default function FeatureComparison() {
                           key={row.feature}
                           className={cn(
                             "grid min-h-[90px] grid-cols-3 items-center border-b",
-                            isLastRow && "border-v1-frost/40",
+                            isLastRow && "border-v1-frost/40"
                           )}
-                          style={isLastRow ? undefined : { borderColor: ROW_BORDER }}
+                          style={
+                            isLastRow ? undefined : { borderColor: ROW_BORDER }
+                          }
                         >
                           <p className="pl-[34px] pr-6 text-[15px] leading-[1.5] text-v1-frost lg:text-[16px]">
                             {row.feature}
@@ -726,7 +1014,7 @@ function HeaderCell({
       className={cn(
         "flex items-center gap-2 font-v1Label text-[16px] uppercase leading-none lg:text-[18px]",
         tone === "dim" ? "text-v1-frost/50" : "text-v1-frost",
-        className,
+        className
       )}
     >
       {icon}

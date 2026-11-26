@@ -4,8 +4,8 @@ import LogoStrip from "@/components/v1/sections/Home/LogoStrip";
 import WhyChoose from "@/components/v1/sections/CompareTemporal/WhyChoose";
 import CodeComparison from "@/components/v1/sections/CompareTemporal/CodeComparison";
 import FeatureComparison from "@/components/v1/sections/CompareTemporal/FeatureComparison";
+import PricingScale from "@/components/v1/sections/CompareTemporal/PricingScale";
 import DesignedForAI from "@/components/v1/sections/CompareTemporal/DesignedForAI";
-import Testimonials from "@/components/v1/sections/CompareTemporal/Testimonials";
 import MissionCritical from "@/components/v1/sections/CompareTemporal/MissionCritical";
 import CtaBand from "@/components/v1/sections/CompareTemporal/CtaBand";
 import Faq from "@/components/v1/sections/CompareTemporal/Faq";
@@ -22,15 +22,15 @@ import FinalCta from "@/components/v1/sections/CompareTemporal/FinalCta";
 export default function CompareToTemporal() {
   return (
     <PageShell>
-      <div data-wcag-cta className="overflow-x-clip">
+      <div data-wcag-cta className="compare-temporal overflow-x-clip">
         {/* Sections land here, top → bottom:
-            Hero · LogoStrip · WhyChoose (3 cards) · CodeComparison ·
-            FeatureComparison · DesignedForAI · Testimonials ·
+            Hero (quotes over the dashboard) · LogoStrip · WhyChoose ·
+            PricingScale · CodeComparison · FeatureComparison · DesignedForAI ·
             MissionCritical · CtaBand · Faq · FinalCta */}
         <Hero />
         <LogoStrip />
-        <Testimonials />
         <WhyChoose />
+        <PricingScale />
         <CodeComparison />
         <FeatureComparison />
         <DesignedForAI />
