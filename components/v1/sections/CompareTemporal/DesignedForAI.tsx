@@ -55,7 +55,7 @@ return llm.complete(transcript) })
     id: "human-in-the-loop",
     title: "Human-in-the-loop",
     blurb:
-      "A native primitive in Inngest. In Temporal, its an assembly of Signals, channels, and Slectors – pattern, not platform.",
+      "A native primitive in Inngest. In Temporal, it’s an assembly of Signals, channels, and Selectors – pattern, not platform.",
     href: "/docs/durable-execution/durable-agents/human-in-the-loop?ref=compare-to-temporal-designed-for-ai",
     code: `const decision
 = await step.waitForEvent('review', {
@@ -76,7 +76,7 @@ Selector, and handler — all manual.`,
     id: "step-observability",
     title: "Step-level observability",
     blurb:
-      "Temporal shows workflow history, Inngest breaks execution into segment — queue delay, step timing, flow control — so you know exactly what happened, and why.",
+      "Temporal shows workflow history, Inngest breaks execution into segments — queue delay, step timing, flow control — so you know exactly what happened, and why.",
     href: "/docs/platform-and-operations/metrics?ref=compare-to-temporal-designed-for-ai",
     segments: true,
   },

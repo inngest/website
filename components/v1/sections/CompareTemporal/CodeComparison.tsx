@@ -111,13 +111,13 @@ export const inngest = new Inngest({
 });
 
 export const welcomeWorkflow = inngest.createFunction(
-  { id: 'welcome-workflow', retries: 4 },
+  { id: 'welcome-workflow', retries: 3 }, // 4 attempts, including the first
   { event: 'user.signup'},
   async ({ event, step }) => {
     const user = await step.run('get-user', async () => {
-      const user = await db.getUser(userId);
+      const user = await db.getUser(event.data.userId);
       if (!user) {
-        throw NonRetriableError('User not found');
+        throw new NonRetriableError('User not found');
       }
       return user;
     });
@@ -161,18 +161,29 @@ const PANEL_GRADIENT =
   "linear-gradient(-82.3891deg, rgba(33, 33, 33, 0) 2.2521%, rgb(2, 2, 2) 46.831%)";
 const HAIRLINE = "rgba(124,124,124,0.35)";
 
-function Snippet({ label, code, first }: { label: string; code: string; first?: boolean }) {
+function Snippet({
+  label,
+  code,
+  first,
+}: {
+  label: string;
+  code: string;
+  first?: boolean;
+}) {
   return (
     <div
       className={cn(
         "flex w-full flex-col items-start gap-3 px-4 pb-[20px] pt-4 sm:px-6",
-        !first && "border-t",
+        !first && "border-t"
       )}
       style={!first ? { borderColor: HAIRLINE } : undefined}
     >
       {/* Filename row — 12px frost square glyph + 18px mono label. */}
       <div className="flex w-full items-center gap-1">
-        <span aria-hidden="true" className="flex w-[18px] shrink-0 justify-center">
+        <span
+          aria-hidden="true"
+          className="flex w-[18px] shrink-0 justify-center"
+        >
           <span className="block size-[12px] bg-v1-frost" />
         </span>
         <span className="font-v1Mono text-[18px] leading-[1.5] text-v1-frost">
@@ -219,13 +230,13 @@ function ColumnHeader({
     <div
       className={cn(
         "flex w-full flex-col gap-8",
-        right ? "items-end" : "items-start",
+        right ? "items-end" : "items-start"
       )}
     >
       <span
         className={cn(
-          "flex items-center gap-2 font-v1Display text-v1-heading-sm uppercase text-v1-frost",
-          right && "flex-row justify-end",
+          "text-v1-heading-sm flex items-center gap-2 font-v1Display uppercase text-v1-frost",
+          right && "flex-row justify-end"
         )}
       >
         {logomark && <Logo logomarkOnly width={26} />}
@@ -234,7 +245,7 @@ function ColumnHeader({
       <p
         className={cn(
           "text-v1-body-sm text-v1-frost",
-          right ? "text-right" : "text-left",
+          right ? "text-right" : "text-left"
         )}
       >
         {body}
@@ -260,10 +271,45 @@ export default function CodeComparison() {
         titleAside={<DocsCtaPair />}
       />
 
+      <div
+        className={`${V1_HEADER_CONTENT_MT} text-v1-body-lg-loose flex max-w-[820px] flex-col gap-5 text-v1-frost`}
+      >
+        <p>
+          Temporal’s deployment model starts before your business logic: a
+          Temporal Service, a database, and worker processes that poll a task
+          queue. Workflow and activity code never runs in that server, so
+          Temporal Cloud leaves the worker fleet yours to size, deploy, monitor,
+          and get paged about.
+        </p>
+        <p>
+          Inngest calls the HTTP endpoint your app already serves. No worker
+          file, no task queue. One route on the app you were already shipping,
+          and setup is done.
+        </p>
+        <p>Locally it’s one command:</p>
+        <pre className="w-fit max-w-full overflow-x-auto rounded-[6px] border border-v1-frost/25 bg-black/40 px-4 py-3 font-v1Mono text-[15px] leading-[1.5] text-v1-frost">
+          {`npx inngest-cli@latest dev`}
+        </pre>
+        <p>
+          That Dev Server is a full execution environment on your machine: event
+          API, queue, executor, and a dashboard with traces and replay. Nothing
+          is mocked. Start your app with{" "}
+          <code className="font-v1Mono text-[0.92em] text-v1-accent-salmon">
+            INNGEST_DEV=1
+          </code>
+          .
+        </p>
+        <p>
+          The same welcome workflow is three Temporal files — activities, the
+          workflow definition, and a worker — versus two on Inngest, where the
+          second is the server you already had.
+        </p>
+      </div>
+
       {/* Two 2px-bordered column boxes, flush at lg (the right column's
           left border overlaps the left column's right border via the
           -2px offset so the shared seam reads as a single 2px stroke). */}
-      <div className={`${V1_HEADER_CONTENT_MT} flex flex-col lg:flex-row lg:items-stretch`}>
+      <div className="mt-v1-stack flex flex-col lg:flex-row lg:items-stretch">
         {/* Temporal */}
         <motion.div
           {...reveals.item(0)}
@@ -287,7 +333,7 @@ export default function CodeComparison() {
           className="-mt-0.5 flex flex-col gap-8 border-2 border-v1-frost p-6 sm:p-8 lg:-ml-0.5 lg:mt-0 lg:flex-1"
         >
           <ColumnHeader
-            align="right"
+            align="left"
             logomark
             label="Inngest"
             body="Inngest calls your existing HTTP endpoints – no new infrastructure, no separate deployment pipeline."

@@ -187,7 +187,7 @@ export const SOCIAL_QUOTES: SocialQuote[] = [
   {
     id: "skylar-temporal-dx",
     quote:
-      "I've constantly felt like I'm losing my mind because there are a lot of Temporal stans and I have often felt it wasn't it DX wise. Going to try out Inngest soon.",
+      "I've constantly felt like I'm losing my mind because there are a lot of Temporal stans and I have often felt it wasn't it DX wise.",
     authorName: "Skylar Payne",
     date: "2026-07-30",
     sourceUrl: "https://x.com/clairevo/status/2082912221542441338",

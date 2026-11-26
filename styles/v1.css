@@ -229,6 +229,58 @@
   color: #fff;
 }
 
+/*
+ * Feature cards flood salmon on hover and while `data-active` is set.
+ * Body copy is forced to #B3B3B3 above, which reads as grey on that
+ * orange. Same white treatment as the pricing cards.
+ */
+.v1-page
+  [data-feature-card]:is(:hover, [data-active="true"])
+  :is(
+    .text-v1-body-lg,
+    .text-v1-body-lg-loose,
+    .text-v1-body-md,
+    .text-v1-body-sm,
+    .text-v1-body-sm-loose,
+    .text-v1-body-xs
+  ) {
+  color: #fff;
+}
+
+/*
+ * /compare-to-temporal only. Site sections use 160px of padding on
+ * each side at lg, so the gap between two sections is 320px and the
+ * next one sits below the fold. Hero and the logo strip keep their
+ * own spacing.
+ */
+.compare-temporal
+  > section:not([aria-labelledby="ct-hero-headline"]):not(
+    [aria-label="Trusted by"]
+  ) {
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .compare-temporal
+    > section:not([aria-labelledby="ct-hero-headline"]):not(
+      [aria-label="Trusted by"]
+    ) {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .compare-temporal
+    > section:not([aria-labelledby="ct-hero-headline"]):not(
+      [aria-label="Trusted by"]
+    ) {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+}
+
 .v1-page-bg {
   background-image: url("/assets/v1/page/.compressed/grain-bg.webp");
   background-size: 100% auto;

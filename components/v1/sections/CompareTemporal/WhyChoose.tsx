@@ -10,7 +10,7 @@ import { V1_HEADER_CONTENT_MT } from "@/components/v1/sections/shared/sectionShe
  * "Why devs choose Inngest over Temporal" — uses the shared 3-column
  * feature cards (FeatureCardsGrid: elevated surfaces, salmon-flood
  * hover, serialised hand-off) under this section's heading. The lead
- * "No workers" card is the idle-active highlight; each card carries a
+ * "Any Workflow" card is the idle-active highlight; each card carries a
  * line-art icon + title + subtitle tagline + body. Copy is verbatim
  * from the design (incl. "confir" / "memorization").
  *
@@ -26,7 +26,8 @@ const CARD_STYLE = {
   cardClassName:
     "justify-start gap-10 sm:gap-10 px-5 pt-6 pb-16 sm:px-5 sm:pt-6 sm:pb-16",
   titleBlockClassName: "gap-[20px]",
-  titleClassName: "text-v1-heading-md-cap lg:text-v1-heading-md-cap",
+  titleClassName:
+    "whitespace-normal text-v1-heading-md-cap lg:text-v1-heading-md-cap",
   subtitleClassName: "text-v1-body-lg leading-[1.5] text-v1-frost",
   bodyClassName: "text-v1-body-lg lg:text-v1-body-lg",
   bodyWrap: true,
@@ -46,19 +47,8 @@ const ICON_DIR = "/assets/v1/compare-temporal/why-choose";
 const CARDS: FeatureCard[] = [
   {
     ...CARD_STYLE,
-    label: "No workers",
-    subtitle: "Zero infrastructure to deploy",
-    vector: `${ICON_DIR}/no-workers.svg`,
-    vectorWidth: 81,
-    vectorHeight: 91, // viewBox 80.98 × 90.75
-    bodyLines: [
-      "Inngest calls your existing HTTP server – no worker processes, no queue confir, no ops surface to maintain.",
-    ],
-  },
-  {
-    ...CARD_STYLE,
-    label: "Built for AI",
-    subtitle: "Built for how agents actually fail",
+    label: "Any Workflow",
+    subtitle: "AI and non-AI workflows",
     vector: `${ICON_DIR}/built-for-ai.svg`,
     vectorWidth: 86,
     vectorHeight: 61, // viewBox 85.98 × 60.75
@@ -68,13 +58,24 @@ const CARDS: FeatureCard[] = [
   },
   {
     ...CARD_STYLE,
-    label: "Any runtime",
+    label: "Any Runtime",
     subtitle: "TypeScript, Python, Go – or anything with HTTP",
     vector: `${ICON_DIR}/any-runtime.svg`,
     vectorWidth: 81,
     vectorHeight: 91, // viewBox 80.75 × 90.75
     bodyLines: [
-      "Temporal’s strongest SDK is Go, Inngest treats every language as a first-class citizen.",
+      "Temporal’s strongest SDK is Go. Inngest runs anywhere that speaks HTTP.",
+    ],
+  },
+  {
+    ...CARD_STYLE,
+    label: "Any Skill",
+    subtitle: "Zero infrastructure to deploy",
+    vector: `${ICON_DIR}/no-workers.svg`,
+    vectorWidth: 81,
+    vectorHeight: 91, // viewBox 80.98 × 90.75
+    bodyLines: [
+      "Inngest calls your HTTP server, so anyone can run it. No queues to configure, no infra to maintain.",
     ],
   },
 ];
