@@ -6,7 +6,7 @@ import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 
 /**
- * "Cheap when you start, painful when you grow."
+ * "Cheap to start, then what?"
  *
  * One agent run, as written: 8 steps. Six are long enough to record one
  * heartbeat, one of those six is retried once, one sleeps, one waits.
@@ -98,12 +98,7 @@ export default function PricingScale() {
     >
       <SectionHeader
         id="ct-pricing-heading"
-        title={
-          <>
-            Cheap when you start, <br className="hidden lg:block" />
-            painful when you grow.
-          </>
-        }
+        title="Cheap to start, then what?"
         titleClassName="lg:max-w-[1100px]"
         body="Temporal’s Actions conceal more than Inngest counts for the same work. Every workflow start, every activity attempt, every timer, signal, and heartbeat—all actions, all billed."
         bodyClassName="max-w-[640px]"
