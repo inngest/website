@@ -92,10 +92,10 @@ export default function Hero() {
           >
             <p>
               If you&apos;re evaluating Temporal alternatives, Inngest vs
-              Temporal is a question of what needs to be durable, who should own
-              it, and how fast it should scale. Only Inngest lets you build AI
-              and non-AI workflows in one SDK, deployed anywhere, with zero
-              extra infra.
+              Temporal is mostly a question of what needs durability, who owns
+              it, and how fast it scales. Only Inngest lets you build AI and
+              non-AI workflows in one SDK, deployed anywhere, with zero extra
+              infra.
             </p>
           </motion.div>
 
